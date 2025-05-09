@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -9,25 +8,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
-import { toast } from "@/components/ui/toaster";
+import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 interface Booking {
   id: string;
   service_id: string;
+  user_id: string;
+  provider_id: string;
   booking_date: string;
   booking_time: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: "pending" | "confirmed" | "cancelled" | "completed";
   created_at: string;
+  updated_at: string;
   service: {
+    id: string;
     title: string;
     price: number;
     image_url: string | null;
+    provider_id: string;
   };
   provider: {
-    first_name: string | null;
-    last_name: string | null;
+    first_name: string;
+    last_name: string;
   };
 }
 
@@ -60,7 +64,16 @@ export default function Bookings() {
           
         if (error) throw error;
         
-        setBookings(data || []);
+        // Certifique-se de que os dados sendo passados para setBookings correspondem ao tipo Booking[]
+        // Quando processar os dados da resposta do Supabase, certifique-se de tipar corretamente:
+        const processBookings = (bookingsData: any[]): Booking[] => {
+          return bookingsData.map(booking => ({
+            ...booking,
+            status: booking.status as "pending" | "confirmed" | "cancelled" | "completed"
+          }));
+        };
+        
+        setBookings(processBookings(data || []));
       } catch (error) {
         console.error("Error fetching bookings:", error);
         toast({

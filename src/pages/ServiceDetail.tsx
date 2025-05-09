@@ -10,7 +10,7 @@ import { Star, Clock, Calendar as CalendarIcon, MapPin, MessageCircle, CheckCirc
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { toast } from "@/components/ui/toaster";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,7 +55,7 @@ const ServiceDetail = () => {
       
       const { data: serviceData, error: serviceError } = await supabase
         .from('services')
-        .select('*, profiles(first_name, last_name), categories(title)')
+        .select('*, profiles!services_provider_id_fkey(first_name, last_name), categories(title)')
         .eq('id', id)
         .single();
       
@@ -115,6 +115,8 @@ const ServiceDetail = () => {
         provider_id: service.provider_id,
         booking_date: format(date, 'yyyy-MM-dd'),
         booking_time: selectedTime,
+        user_id: session.session.user.id,
+        status: 'pending' as 'pending' | 'confirmed' | 'cancelled' | 'completed'
       };
       
       const { error: bookingError } = await supabase
