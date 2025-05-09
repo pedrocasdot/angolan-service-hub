@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Star, Clock, Calendar as CalendarIcon, MapPin, MessageCircle, CheckCircle } from "lucide-react";
+import { Star, Clock, Calendar as CalendarIcon, MapPin, MessageCircle, CheckCircle, User } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -225,12 +225,13 @@ const ServiceDetail = () => {
                       {date ? format(date, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={setDate}
                       initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
