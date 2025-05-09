@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -53,9 +52,14 @@ const ServiceDetail = () => {
     queryFn: async () => {
       if (!id) return null;
       
+      // Correção na consulta - usando join correto para obter dados do provedor
       const { data: serviceData, error: serviceError } = await supabase
         .from('services')
-        .select('*, profiles!services_provider_id_fkey(first_name, last_name), categories(title)')
+        .select(`
+          *,
+          profiles:provider_id(first_name, last_name),
+          categories(title)
+        `)
         .eq('id', id)
         .single();
       
@@ -75,13 +79,16 @@ const ServiceDetail = () => {
         
       setReviews(reviewsData?.map((review: any) => ({
         ...review,
-        user_name: `${review.profiles.first_name} ${review.profiles.last_name}`.trim() || 'Cliente'
+        user_name: `${review.profiles?.first_name || ''} ${review.profiles?.last_name || ''}`.trim() || 'Cliente'
       })) || []);
       
+      // Extraindo corretamente os dados do provedor de serviceData.profiles
       return {
         ...serviceData,
-        provider_name: `${serviceData.profiles.first_name} ${serviceData.profiles.last_name}`.trim() || 'Prestador',
-        category_name: serviceData.categories.title,
+        provider_name: serviceData.profiles ? 
+          `${serviceData.profiles.first_name || ''} ${serviceData.profiles.last_name || ''}`.trim() || 'Prestador' : 
+          'Prestador',
+        category_name: serviceData.categories?.title || '',
         rating: avgRating,
         review_count: reviewsData?.length || 0
       } as Service;
@@ -217,29 +224,29 @@ const ServiceDetail = () => {
           <div className="md:col-span-2">
             <div className="relative rounded-lg overflow-hidden mb-6">
               <img 
-                src={service.image_url || "https://via.placeholder.com/800x400?text=Imagem+do+serviço"} 
-                alt={service.title} 
+                src={service?.image_url || "https://via.placeholder.com/800x400?text=Imagem+do+serviço"} 
+                alt={service?.title} 
                 className="w-full h-64 md:h-96 object-cover"
               />
             </div>
 
-            <h1 className="text-3xl font-bold mb-2">{service.title}</h1>
+            <h1 className="text-3xl font-bold mb-2">{service?.title}</h1>
             <div className="flex items-center mb-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
                     size={18} 
-                    className={i < Math.floor(service.rating || 0) ? "fill-angola-secondary text-angola-secondary" : "text-gray-300"} 
+                    className={i < Math.floor(service?.rating || 0) ? "fill-angola-secondary text-angola-secondary" : "text-gray-300"} 
                   />
                 ))}
-                <span className="ml-2 text-sm font-medium">{(service.rating || 0).toFixed(1)}</span>
-                <span className="ml-1 text-sm text-gray-500">({service.review_count} avaliações)</span>
+                <span className="ml-2 text-sm font-medium">{(service?.rating || 0).toFixed(1)}</span>
+                <span className="ml-1 text-sm text-gray-500">({service?.review_count} avaliações)</span>
               </div>
               <Separator orientation="vertical" className="mx-4 h-4" />
               <div className="flex items-center">
                 <MapPin size={16} className="mr-1 text-angola-primary" />
-                <span className="text-sm">{service.location || "Luanda, Angola"}</span>
+                <span className="text-sm">{service?.location || "Luanda, Angola"}</span>
               </div>
             </div>
 
@@ -252,7 +259,7 @@ const ServiceDetail = () => {
               <TabsContent value="description" className="py-4">
                 <h2 className="text-xl font-semibold mb-4">Sobre este serviço</h2>
                 <p className="mb-4 text-gray-600">
-                  {service.description}
+                  {service?.description}
                 </p>
                 <div className="mt-6">
                   <h3 className="font-semibold mb-2">O que está incluído:</h3>
@@ -273,11 +280,11 @@ const ServiceDetail = () => {
                     <ul className="space-y-2">
                       <li className="flex items-center">
                         <Clock size={16} className="mr-2 text-angola-primary" />
-                        <span className="text-sm">Duração: {service.duration || 2} horas</span>
+                        <span className="text-sm">Duração: {service?.duration || 2} horas</span>
                       </li>
                       <li className="flex items-center">
                         <MapPin size={16} className="mr-2 text-angola-primary" />
-                        <span className="text-sm">Localização: {service.location || "Luanda, Angola"}</span>
+                        <span className="text-sm">Localização: {service?.location || "Luanda, Angola"}</span>
                       </li>
                       <li className="flex items-center">
                         <Calendar size={16} className="mr-2 text-angola-primary" />
@@ -292,7 +299,7 @@ const ServiceDetail = () => {
                         <User size={24} className="text-gray-500" />
                       </div>
                       <div>
-                        <p className="font-medium">{service.provider_name}</p>
+                        <p className="font-medium">{service?.provider_name}</p>
                         <p className="text-sm text-gray-500">Membro desde 2022</p>
                       </div>
                     </div>
@@ -345,7 +352,7 @@ const ServiceDetail = () => {
             <div className="sticky top-20 bg-white border rounded-lg p-6 shadow-sm">
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-1">
-                  {service.price.toLocaleString('pt-AO')} Kz
+                  {service?.price.toLocaleString('pt-AO')} Kz
                 </h3>
                 <p className="text-sm text-gray-500">Por serviço</p>
               </div>

@@ -30,8 +30,8 @@ interface Booking {
     provider_id: string;
   };
   provider: {
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
   };
 }
 
@@ -62,13 +62,17 @@ export default function Bookings() {
           .eq('user_id', user.id)
           .order('booking_date', { ascending: true });
           
-        if (error) throw error;
+        if (error) {
+          console.error("Erro na consulta:", error);
+          throw error;
+        }
         
-        // Certifique-se de que os dados sendo passados para setBookings correspondem ao tipo Booking[]
-        // Quando processar os dados da resposta do Supabase, certifique-se de tipar corretamente:
+        console.log("Dados recebidos:", data);
+        
         const processBookings = (bookingsData: any[]): Booking[] => {
           return bookingsData.map(booking => ({
             ...booking,
+            provider: booking.provider || { first_name: null, last_name: null },
             status: booking.status as "pending" | "confirmed" | "cancelled" | "completed"
           }));
         };
@@ -99,7 +103,6 @@ export default function Bookings() {
         
       if (error) throw error;
       
-      // Update local state
       setBookings(bookings.map(booking => 
         booking.id === id ? { ...booking, status: 'cancelled' } : booking
       ));
