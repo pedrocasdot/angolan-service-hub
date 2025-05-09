@@ -1,60 +1,78 @@
 
-import { Scissors, Home, Calendar, Clock, ShoppingBag, User, Users } from "lucide-react";
+import { LucideIcon, Scissors, Home, Calendar, Clock, ShoppingBag, User, Users } from "lucide-react";
 
-export const categories = [
+// Create an interface for the category item
+export interface Category {
+  id: string;
+  title: string;
+  iconName: string;
+  icon: LucideIcon;
+  description: string;
+  href: string;
+}
+
+export const categories: Category[] = [
   {
     id: "haircuts",
     title: "Haircuts & Styling",
-    icon: <Scissors size={24} />,
+    iconName: "scissors",
+    icon: Scissors,
     description: "Professional haircuts and styling services",
     href: "/services/haircuts",
   },
   {
     id: "cleaning",
     title: "Home Cleaning",
-    icon: <Home size={24} />,
+    iconName: "home",
+    icon: Home,
     description: "House cleaning and maintenance services",
     href: "/services/cleaning",
   },
   {
     id: "plumbing",
     title: "Plumbing",
-    icon: <User size={24} />,
+    iconName: "user",
+    icon: User,
     description: "Plumbing repair and installation",
     href: "/services/plumbing",
   },
   {
     id: "electrical",
     title: "Electrical",
-    icon: <Users size={24} />,
+    iconName: "users",
+    icon: Users,
     description: "Electrical repair and installation",
     href: "/services/electrical",
   },
   {
     id: "tutoring",
     title: "Tutoring",
-    icon: <Calendar size={24} />,
+    iconName: "calendar",
+    icon: Calendar,
     description: "Academic and skills tutoring",
     href: "/services/tutoring",
   },
   {
     id: "events",
     title: "Event Planning",
-    icon: <Clock size={24} />,
+    iconName: "clock",
+    icon: Clock,
     description: "Event planning and coordination",
     href: "/services/events",
   },
   {
     id: "delivery",
     title: "Delivery",
-    icon: <ShoppingBag size={24} />,
+    iconName: "shoppingBag",
+    icon: ShoppingBag,
     description: "Delivery and pickup services",
     href: "/services/delivery",
   },
   {
     id: "repairs",
     title: "Home Repairs",
-    icon: <Home size={24} />,
+    iconName: "home",
+    icon: Home,
     description: "General home repairs and maintenance",
     href: "/services/repairs",
   },
