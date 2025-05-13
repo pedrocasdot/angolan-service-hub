@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,7 +25,8 @@ import {
   DialogTrigger 
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, PencilIcon, Trash2Icon, PlusCircle } from "lucide-react";
+import { PencilIcon, Trash2Icon, PlusCircle } from "lucide-react";
+import { categories } from "@/data/mockData";
 
 interface Service {
   id: string;
@@ -39,17 +39,33 @@ interface Service {
   image_url: string | null;
 }
 
-interface Category {
-  id: string;
-  title: string;
-}
+// Mock user services
+const mockUserServices: Service[] = [
+  {
+    id: "user-service-1",
+    title: "Corte de Cabelo Moderno",
+    description: "Corte moderno para homens com técnicas atuais e produtos de qualidade.",
+    price: 4500,
+    category_id: "haircuts",
+    location: "Luanda, Angola",
+    duration: 1,
+    image_url: "https://images.unsplash.com/photo-1581591524425-c7e0978865fc?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "user-service-2",
+    title: "Limpeza Residencial Completa",
+    description: "Serviço completo de limpeza para residências de até 3 quartos, incluindo produtos.",
+    price: 9000,
+    category_id: "cleaning",
+    location: "Luanda, Angola",
+    duration: 4,
+    image_url: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=800&q=80"
+  }
+];
 
 export default function MyServices() {
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [services, setServices] = useState<Service[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>(mockUserServices);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentService, setCurrentService] = useState<Service | null>(null);
@@ -62,47 +78,6 @@ export default function MyServices() {
   const [location, setLocation] = useState("");
   const [duration, setDuration] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  
-  useEffect(() => {
-    if (authLoading) return;
-    
-    if (!user) {
-      navigate("/auth?redirect=/my-services");
-      return;
-    }
-    
-    async function fetchData() {
-      try {
-        // Fetch categories
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('categories')
-          .select('id, title');
-          
-        if (categoriesError) throw categoriesError;
-        setCategories(categoriesData || []);
-        
-        // Fetch user services
-        const { data: servicesData, error: servicesError } = await supabase
-          .from('services')
-          .select('*')
-          .eq('provider_id', user.id);
-          
-        if (servicesError) throw servicesError;
-        setServices(servicesData || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os serviços",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    fetchData();
-  }, [user, authLoading, navigate]);
   
   const resetForm = () => {
     setTitle("");
@@ -128,8 +103,6 @@ export default function MyServices() {
   };
   
   const handleSubmit = async () => {
-    if (!user) return;
-    
     if (!title || !description || !price || !categoryId) {
       toast({
         title: "Campos obrigatórios",
@@ -146,23 +119,16 @@ export default function MyServices() {
         description,
         price: Number(price),
         category_id: categoryId,
-        provider_id: user.id,
         location,
         duration: Number(duration),
         updated_at: new Date().toISOString()
       };
       
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       if (isEditing && currentService) {
         // Update existing service
-        const { error } = await supabase
-          .from('services')
-          .update(serviceData)
-          .eq('id', currentService.id)
-          .eq('provider_id', user.id);
-          
-        if (error) throw error;
-        
-        // Update local state
         setServices(services.map(s => 
           s.id === currentService.id ? { ...s, ...serviceData } : s
         ));
@@ -172,16 +138,17 @@ export default function MyServices() {
           description: "Seu serviço foi atualizado com sucesso",
         });
       } else {
-        // Create new service
-        const { data, error } = await supabase
-          .from('services')
-          .insert(serviceData)
-          .select();
-          
-        if (error) throw error;
+        // Create new service with mock ID
+        const newService = {
+          ...serviceData,
+          id: `user-service-${Date.now()}`,
+          provider_id: "user-123", // Mock user ID
+          image_url: null,
+          created_at: new Date().toISOString()
+        } as Service;
         
         // Update local state
-        setServices([...services, data[0]]);
+        setServices([...services, newService]);
         
         toast({
           title: "Serviço criado",
@@ -204,20 +171,13 @@ export default function MyServices() {
   };
   
   const deleteService = async (id: string) => {
-    if (!user) return;
-    
     if (!confirm("Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.")) {
       return;
     }
     
     try {
-      const { error } = await supabase
-        .from('services')
-        .delete()
-        .eq('id', id)
-        .eq('provider_id', user.id);
-        
-      if (error) throw error;
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Update local state
       setServices(services.filter(s => s.id !== id));
@@ -235,16 +195,6 @@ export default function MyServices() {
       });
     }
   };
-
-  if (authLoading) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
@@ -350,7 +300,7 @@ export default function MyServices() {
                   Cancelar
                 </Button>
                 <Button onClick={handleSubmit} disabled={submitting}>
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {submitting && <span className="mr-2">⏳</span>}
                   {isEditing ? "Atualizar" : "Criar"} Serviço
                 </Button>
               </DialogFooter>
@@ -358,11 +308,7 @@ export default function MyServices() {
           </Dialog>
         </div>
         
-        {loading ? (
-          <div className="flex justify-center items-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : services.length > 0 ? (
+        {services.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
               <Card key={service.id}>
@@ -421,7 +367,6 @@ export default function MyServices() {
                   Criar Meu Primeiro Serviço
                 </Button>
               </DialogTrigger>
-              {/* Dialog content is already defined above */}
             </Dialog>
           </div>
         )}

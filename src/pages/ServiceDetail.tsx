@@ -11,18 +11,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { featuredServices, testimonials } from "@/data/mockData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { pt } from "date-fns/locale";
 
 interface Review {
   id: string;
-  user_id: string;
+  user_name: string;
   rating: number;
   comment: string;
   created_at: string;
-  user_name?: string;
 }
 
 interface Service {
@@ -31,88 +29,99 @@ interface Service {
   description: string;
   price: number;
   image_url: string;
-  provider_id: string;
-  category_id: string;
-  location: string;
-  duration: number;
+  provider_id?: string;
+  category_id?: string;
+  location?: string;
+  duration?: number;
   provider_name?: string;
   category_name?: string;
   rating?: number;
   review_count?: number;
+  image?: string;
+  provider?: string;
+  category?: string;
 }
+
+const mockReviews: Review[] = [
+  {
+    id: "1",
+    user_name: "João Silva",
+    rating: 5,
+    comment: "Excelente serviço, muito profissional e pontual!",
+    created_at: "2024-04-15T10:30:00Z"
+  },
+  {
+    id: "2",
+    user_name: "Maria Oliveira",
+    rating: 4,
+    comment: "Bom atendimento, recomendo.",
+    created_at: "2024-04-10T14:45:00Z"
+  },
+  {
+    id: "3",
+    user_name: "Pedro Santos",
+    rating: 5,
+    comment: "O serviço foi perfeito, super rápido e eficiente.",
+    created_at: "2024-04-05T09:20:00Z"
+  }
+];
 
 const ServiceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [service, setService] = useState<Service | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch service details
-  const { data: service, isLoading, error } = useQuery({
-    queryKey: ['service', id],
-    queryFn: async () => {
-      if (!id) return null;
-      
-      // Correção na consulta - usando join correto para obter dados do provedor
-      const { data: serviceData, error: serviceError } = await supabase
-        .from('services')
-        .select(`
-          *,
-          profiles!services_provider_id_fkey(first_name, last_name),
-          categories(title)
-        `)
-        .eq('id', id)
-        .single();
-      
-      if (serviceError) throw serviceError;
-      
-      // Get reviews for this service
-      const { data: reviewsData } = await supabase
-        .from('reviews')
-        .select('*, profiles(first_name, last_name)')
-        .eq('service_id', id)
-        .order('created_at', { ascending: false });
+  // Fetch service details from mock data
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        // Simulate API loading
+        setIsLoading(true);
         
-      // Calculate rating
-      const avgRating = reviewsData?.length 
-        ? reviewsData.reduce((sum: number, review: any) => sum + review.rating, 0) / reviewsData.length 
-        : 0;
+        // Find service in mock data
+        const foundService = featuredServices.find(s => s.id === id);
         
-      setReviews(reviewsData?.map((review: any) => ({
-        ...review,
-        user_name: `${review.profiles?.first_name || ''} ${review.profiles?.last_name || ''}`.trim() || 'Cliente'
-      })) || []);
-      
-      // Correção para lidar com o tipo correto de dados retornados
-      const providerName = serviceData.profiles ? 
-        `${serviceData.profiles.first_name || ''} ${serviceData.profiles.last_name || ''}`.trim() || 'Prestador' : 
-        'Prestador';
-      
-      return {
-        ...serviceData,
-        provider_name: providerName,
-        category_name: serviceData.categories?.title || '',
-        rating: avgRating,
-        review_count: reviewsData?.length || 0
-      } as Service;
-    },
-    enabled: !!id
-  });
-
-  const handleBookService = async () => {
-    try {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        toast({
-          title: "Autenticação necessária",
-          description: "Por favor, faça login para reservar este serviço",
-        });
-        navigate("/auth?redirect=" + encodeURIComponent(`/service/${id}`));
-        return;
+        if (foundService) {
+          // Convert to the Service interface format
+          const serviceData: Service = {
+            id: foundService.id,
+            title: foundService.title,
+            description: "Este é um serviço profissional de alta qualidade oferecido por prestadores experientes. Nossos especialistas garantem resultados excepcionais e satisfação total do cliente. Usamos materiais e equipamentos de primeira linha para garantir o melhor resultado possível.",
+            price: foundService.price,
+            image_url: foundService.image,
+            provider_name: foundService.provider,
+            category_name: foundService.category,
+            location: "Luanda, Angola",
+            duration: 2,
+            rating: foundService.rating,
+            review_count: foundService.reviewCount
+          };
+          
+          setService(serviceData);
+          
+          // Simulate fetching reviews
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        } else {
+          // Service not found
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados do serviço:", error);
+        setIsLoading(false);
       }
-      
+    };
+    
+    fetchService();
+  }, [id]);
+
+  const handleBookService = () => {
+    try {
       if (!date || !selectedTime || !service) {
         toast({
           title: "Informação incompleta",
@@ -121,24 +130,10 @@ const ServiceDetail = () => {
         return;
       }
       
-      const bookingData = {
-        service_id: service.id,
-        provider_id: service.provider_id,
-        booking_date: format(date, 'yyyy-MM-dd'),
-        booking_time: selectedTime,
-        user_id: session.session.user.id,
-        status: 'pending' as 'pending' | 'confirmed' | 'cancelled' | 'completed'
-      };
-      
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .insert(bookingData);
-        
-      if (bookingError) throw bookingError;
-      
+      // Mock booking
       toast({
         title: "Reserva realizada com sucesso!",
-        description: `Sua reserva para ${service.title} foi agendada para ${format(date, 'dd/MM/yyyy')} às ${selectedTime}.`,
+        description: `Sua reserva para ${service.title} foi agendada para ${format(date, 'dd/MM/yyyy', { locale: pt })} às ${selectedTime}.`,
       });
       
       // Redirect to bookings page
@@ -153,38 +148,14 @@ const ServiceDetail = () => {
     }
   };
 
-  const contactProvider = async () => {
+  const contactProvider = () => {
     if (!service) return;
-    
-    const { data: session } = await supabase.auth.getSession();
-    if (!session.session) {
-      toast({
-        title: "Autenticação necessária",
-        description: "Por favor, faça login para contatar o prestador",
-      });
-      navigate("/auth?redirect=" + encodeURIComponent(`/service/${id}`));
-      return;
-    }
     
     toast({
       title: "Recurso em desenvolvimento",
       description: "O sistema de mensagens estará disponível em breve.",
     });
   };
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-3xl font-bold mb-4">Erro ao carregar o serviço</h1>
-          <p className="mb-6">Ocorreu um erro ao carregar as informações do serviço.</p>
-          <Button asChild>
-            <a href="/services">Explorar Outros Serviços</a>
-          </Button>
-        </div>
-      </Layout>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -340,7 +311,7 @@ const ServiceDetail = () => {
                         {review.comment}
                       </p>
                       <p className="text-xs text-gray-400 mt-2">
-                        {new Date(review.created_at).toLocaleDateString()}
+                        {new Date(review.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                   ))
