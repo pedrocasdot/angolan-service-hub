@@ -187,3 +187,108 @@ export const testimonials = [
     service: "Canalização",
   },
 ];
+
+// Mock user data
+export const mockUsers = [
+  {
+    id: "mock-user-id",
+    email: "user@example.com",
+  },
+];
+
+// Mock profile data
+export const mockProfiles = [
+  {
+    id: "mock-user-id",
+    first_name: "João",
+    last_name: "Silva",
+    avatar_url: "https://i.pravatar.cc/150?u=user1",
+    phone: "+244 923 456 789",
+    address: "Rua das Flores 123, Luanda",
+  },
+];
+
+// Mock services data
+export const mockServices = [
+  {
+    id: "1",
+    title: "Corte de Cabelo Premium",
+    description: "Serviço de corte de cabelo premium com tratamento capilar.",
+    provider_id: "mock-user-id",
+    price: 5000,
+    category: "haircuts",
+    image: "https://images.unsplash.com/photo-1581591524425-c7e0978865fc?auto=format&fit=crop&w=800&q=80",
+    location: "Luanda",
+    availability: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"],
+    rating: 4.8,
+    created_at: "2025-01-01T00:00:00Z",
+  },
+  {
+    id: "2",
+    title: "Limpeza Completa de Casa",
+    description: "Serviço de limpeza completa para sua residência.",
+    provider_id: "provider-2",
+    price: 8500,
+    category: "cleaning",
+    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=800&q=80",
+    location: "Benguela",
+    availability: ["Segunda", "Quarta", "Sexta"],
+    rating: 4.7,
+    created_at: "2025-01-02T00:00:00Z",
+  },
+  {
+    id: "3",
+    title: "Reparo de Canalização",
+    description: "Serviço especializado em reparos de canalização e encanamento.",
+    provider_id: "provider-3",
+    price: 6000,
+    category: "plumbing",
+    image: "https://images.unsplash.com/photo-1575998733749-16a657403d5e?auto=format&fit=crop&w=800&q=80",
+    location: "Luanda",
+    availability: ["Terça", "Quinta", "Sábado"],
+    rating: 4.5,
+    created_at: "2025-01-03T00:00:00Z",
+  },
+];
+
+// Mock bookings data
+export const mockBookings = [
+  {
+    id: "booking-1",
+    user_id: "mock-user-id",
+    service_id: "1",
+    date: "2025-05-15",
+    time: "14:00",
+    status: "confirmed",
+    created_at: "2025-05-10T10:30:00Z",
+    service: {
+      title: "Corte de Cabelo Premium",
+      price: 5000,
+      provider_id: "mock-user-id",
+    },
+    provider: {
+      first_name: "Urban",
+      last_name: "Cuts",
+      avatar_url: "https://i.pravatar.cc/150?u=provider1",
+    }
+  },
+  {
+    id: "booking-2",
+    user_id: "mock-user-id",
+    service_id: "2",
+    date: "2025-05-20",
+    time: "10:00",
+    status: "pending",
+    created_at: "2025-05-12T15:45:00Z",
+    service: {
+      title: "Limpeza Completa de Casa",
+      price: 8500,
+      provider_id: "provider-2",
+    },
+    provider: {
+      first_name: "Clean",
+      last_name: "Home",
+      avatar_url: "https://i.pravatar.cc/150?u=provider2",
+    }
+  },
+];
