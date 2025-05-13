@@ -23,9 +23,9 @@ const Services = () => {
     <Layout>
       <div className="bg-angola-dark text-white py-12">
         <div className="container px-4 mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">Browse Services in Angola</h1>
+          <h1 className="text-3xl font-bold mb-4">Explorar Serviços em Angola</h1>
           <p className="max-w-2xl mx-auto">
-            Find and book the services you need from trusted local providers
+            Encontre e reserve os serviços que você precisa de prestadores locais confiáveis
           </p>
         </div>
       </div>
@@ -35,25 +35,25 @@ const Services = () => {
         <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Search</label>
+              <label className="block text-sm font-medium mb-1">Pesquisar</label>
               <Input
                 type="text"
-                placeholder="Search services or providers..."
+                placeholder="Pesquisar serviços ou prestadores..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Category</label>
+              <label className="block text-sm font-medium mb-1">Categoria</label>
               <Select 
                 value={selectedCategory} 
                 onValueChange={setSelectedCategory}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="All Categories" />
+                  <SelectValue placeholder="Todas as Categorias" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">Todas as Categorias</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.title}
@@ -63,16 +63,16 @@ const Services = () => {
               </Select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Sort By</label>
+              <label className="block text-sm font-medium mb-1">Ordenar Por</label>
               <Select defaultValue="recommended">
                 <SelectTrigger>
-                  <SelectValue placeholder="Recommended" />
+                  <SelectValue placeholder="Recomendados" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="recommended">Recommended</SelectItem>
-                  <SelectItem value="price-low">Price (Low to High)</SelectItem>
-                  <SelectItem value="price-high">Price (High to Low)</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
+                  <SelectItem value="recommended">Recomendados</SelectItem>
+                  <SelectItem value="price-low">Preço (Menor para Maior)</SelectItem>
+                  <SelectItem value="price-high">Preço (Maior para Menor)</SelectItem>
+                  <SelectItem value="rating">Melhor Avaliados</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -98,15 +98,15 @@ const Services = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <h3 className="text-xl font-medium mb-2">No services found</h3>
-            <p className="text-gray-600 mb-6">Try adjusting your filters or search query</p>
+            <h3 className="text-xl font-medium mb-2">Nenhum serviço encontrado</h3>
+            <p className="text-gray-600 mb-6">Tente ajustar seus filtros ou termo de pesquisa</p>
             <Button 
               onClick={() => {
                 setSelectedCategory("all");
                 setSearchQuery("");
               }}
             >
-              Reset Filters
+              Redefinir Filtros
             </Button>
           </div>
         )}

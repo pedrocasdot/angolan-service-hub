@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -13,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { pt } from "date-fns/locale";
 
 interface Review {
   id: string;
@@ -57,7 +59,7 @@ const ServiceDetail = () => {
         .from('services')
         .select(`
           *,
-          profiles:provider_id(first_name, last_name),
+          profiles!services_provider_id_fkey(first_name, last_name),
           categories(title)
         `)
         .eq('id', id)
@@ -371,7 +373,7 @@ const ServiceDetail = () => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : "Escolha uma data"}
+                      {date ? format(date, "PPP", { locale: pt }) : "Escolha uma data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -380,7 +382,8 @@ const ServiceDetail = () => {
                       selected={date}
                       onSelect={setDate}
                       initialFocus
-                      className={cn("p-3 pointer-events-auto")}
+                      locale={pt}
+                      className="p-3"
                     />
                   </PopoverContent>
                 </Popover>
