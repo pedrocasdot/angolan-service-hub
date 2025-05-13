@@ -84,12 +84,14 @@ const ServiceDetail = () => {
         user_name: `${review.profiles?.first_name || ''} ${review.profiles?.last_name || ''}`.trim() || 'Cliente'
       })) || []);
       
-      // Extraindo corretamente os dados do provedor de serviceData.profiles
+      // Correção para lidar com o tipo correto de dados retornados
+      const providerName = serviceData.profiles ? 
+        `${serviceData.profiles.first_name || ''} ${serviceData.profiles.last_name || ''}`.trim() || 'Prestador' : 
+        'Prestador';
+      
       return {
         ...serviceData,
-        provider_name: serviceData.profiles ? 
-          `${serviceData.profiles.first_name || ''} ${serviceData.profiles.last_name || ''}`.trim() || 'Prestador' : 
-          'Prestador',
+        provider_name: providerName,
         category_name: serviceData.categories?.title || '',
         rating: avgRating,
         review_count: reviewsData?.length || 0
@@ -289,7 +291,7 @@ const ServiceDetail = () => {
                         <span className="text-sm">Localização: {service?.location || "Luanda, Angola"}</span>
                       </li>
                       <li className="flex items-center">
-                        <Calendar size={16} className="mr-2 text-angola-primary" />
+                        <CalendarIcon size={16} className="mr-2 text-angola-primary" />
                         <span className="text-sm">Disponibilidade: Segunda - Sábado, 8h - 18h</span>
                       </li>
                     </ul>
@@ -383,7 +385,7 @@ const ServiceDetail = () => {
                       onSelect={setDate}
                       initialFocus
                       locale={pt}
-                      className="p-3"
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
