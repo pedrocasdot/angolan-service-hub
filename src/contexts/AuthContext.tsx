@@ -48,18 +48,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentSession.user.id)
-            .single();
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user ?? null);
           
-          setProfile(data);
+          if (currentSession.user) {
+            const { data } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentSession.user.id)
+              .single();
+            
+            setProfile(data);
+          } else {
+            setProfile(null);
+          }
         } else {
+          setSession(null);
+          setUser(null);
           setProfile(null);
         }
         
@@ -69,19 +75,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            setProfile(data);
-            setLoading(false);
-          });
+      if (session) {
+        setSession(session);
+        setUser(session.user ?? null);
+        
+        if (session.user) {
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+            .then(({ data }) => {
+              setProfile(data);
+              setLoading(false);
+            });
+        } else {
+          setLoading(false);
+        }
       } else {
         setLoading(false);
       }
