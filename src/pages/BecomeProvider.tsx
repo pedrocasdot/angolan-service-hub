@@ -52,32 +52,41 @@ const BecomeProvider = () => {
     setIsSubmitting(true);
 
     try {
-      // In a real application, we would update the profile and create a provider record
-      // For now, we'll simulate success with the mock data
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API request
-
       if (step === 1) {
         setStep(2);
         setIsSubmitting(false);
         return;
       }
 
-      // Final submission - update profile with business info
+      // Final submission - update profile with business info and change role to provider
       await supabase
         .from("profiles")
         .update({
           phone,
           address,
+          role: 'provider'
         })
         .eq("id", user.id);
+      
+      // Create provider details record
+      await supabase
+        .from("provider_details")
+        .insert({
+          id: user.id,
+          business_name: businessName,
+          bio,
+          expertise
+        });
       
       toast({
         title: "Registro concluído!",
         description: "Seu perfil de prestador foi criado com sucesso.",
       });
       
-      navigate("/my-services");
+      // Refresh page to update auth context with new role
+      window.location.href = "/dashboard";
     } catch (error) {
+      console.error("Error updating profile:", error);
       toast({
         title: "Erro ao registrar",
         description: "Ocorreu um erro ao processar seu registro. Por favor tente novamente.",

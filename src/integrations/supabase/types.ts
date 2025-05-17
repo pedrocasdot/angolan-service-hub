@@ -83,6 +83,7 @@ export type Database = {
           id: string
           last_name: string | null
           phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
@@ -93,6 +94,7 @@ export type Database = {
           id: string
           last_name?: string | null
           phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
@@ -103,9 +105,45 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
+      }
+      provider_details: {
+        Row: {
+          bio: string | null
+          business_name: string
+          created_at: string
+          expertise: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          business_name: string
+          created_at?: string
+          expertise?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          business_name?: string
+          created_at?: string
+          expertise?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_details_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -203,7 +241,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "client" | "provider" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -318,6 +356,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["client", "provider", "admin"],
+    },
   },
 } as const

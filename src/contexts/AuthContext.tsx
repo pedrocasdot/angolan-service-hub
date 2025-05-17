@@ -18,22 +18,38 @@ interface Profile {
   avatar_url: string | null;
   phone: string | null;
   address: string | null;
+  role: 'client' | 'provider' | 'admin' | null;
+}
+
+interface ProviderDetails {
+  id: string;
+  business_name: string;
+  bio: string | null;
+  expertise: string | null;
 }
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
+  providerDetails: ProviderDetails | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  isProvider: () => boolean;
+  isAdmin: () => boolean;
+  isClient: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   profile: null,
+  providerDetails: null,
   loading: true,
-  signOut: async () => {}
+  signOut: async () => {},
+  isProvider: () => false,
+  isAdmin: () => false,
+  isClient: () => false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -42,7 +58,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [providerDetails, setProviderDetails] = useState<ProviderDetails | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isProvider = () => profile?.role === 'provider';
+  const isAdmin = () => profile?.role === 'admin';
+  const isClient = () => profile?.role === 'client';
+
+  const fetchProviderDetails = async (userId: string) => {
+    if (!isProvider()) return null;
+    
+    try {
+      const { data } = await supabase
+        .from('provider_details')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      setProviderDetails(data);
+    } catch (error) {
+      console.error("Error fetching provider details:", error);
+    }
+  };
 
   useEffect(() => {
     // Set up the auth state listener
@@ -60,13 +97,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               .single();
             
             setProfile(data);
+            
+            // Defer provider details fetching to prevent potential deadlocks
+            if (data?.role === 'provider') {
+              setTimeout(() => {
+                fetchProviderDetails(currentSession.user.id);
+              }, 0);
+            }
           } else {
             setProfile(null);
+            setProviderDetails(null);
           }
         } else {
           setSession(null);
           setUser(null);
           setProfile(null);
+          setProviderDetails(null);
         }
         
         setLoading(false);
@@ -87,6 +133,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .single()
             .then(({ data }) => {
               setProfile(data);
+              
+              // Fetch provider details if needed
+              if (data?.role === 'provider') {
+                fetchProviderDetails(session.user.id);
+              }
+              
+              setLoading(false);
+            })
+            .catch(() => {
               setLoading(false);
             });
         } else {
@@ -107,7 +162,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      profile, 
+      providerDetails,
+      loading, 
+      signOut, 
+      isProvider, 
+      isAdmin, 
+      isClient 
+    }}>
       {children}
     </AuthContext.Provider>
   );

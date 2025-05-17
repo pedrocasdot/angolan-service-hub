@@ -15,6 +15,7 @@ import Bookings from "./pages/Bookings";
 import Account from "./pages/Account";
 import MyServices from "./pages/MyServices";
 import BecomeProvider from "./pages/BecomeProvider";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/account" element={<Account />} />
             <Route path="/my-services" element={<MyServices />} />
             <Route path="/become-provider" element={<BecomeProvider />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

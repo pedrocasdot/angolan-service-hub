@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingBag, User, LogOut, Menu } from "lucide-react";
+import { ShoppingBag, User, LogOut, Menu, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -16,7 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
 const Header = () => {
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, isProvider, isAdmin } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
@@ -52,6 +52,7 @@ const Header = () => {
                 <Link to="/providers" className="px-2 py-1 text-lg font-medium">Prestadores</Link>
                 {user ? (
                   <>
+                    <Link to="/dashboard" className="px-2 py-1 text-lg font-medium">Painel</Link>
                     <Link to="/bookings" className="px-2 py-1 text-lg font-medium">Minhas Reservas</Link>
                     <Link to="/account" className="px-2 py-1 text-lg font-medium">Minha Conta</Link>
                     <Button variant="destructive" onClick={signOut} className="mt-4">
@@ -82,9 +83,10 @@ const Header = () => {
           </Link>
           {user ? (
             <>
-              <Link to="/bookings">
+              <Link to="/dashboard">
                 <Button variant="ghost" size="sm">
-                  Minhas Reservas
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Painel
                 </Button>
               </Link>
               <DropdownMenu>
@@ -97,13 +99,26 @@ const Header = () => {
                   <DropdownMenuLabel>
                     {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}` : user.email}
                   </DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">
+                    {isAdmin() ? 'Administrador' : isProvider() ? 'Prestador' : 'Cliente'}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link to="/account">Minha Conta</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/my-services">Meus Serviços</Link>
+                    <Link to="/bookings">Minhas Reservas</Link>
                   </DropdownMenuItem>
+                  {isProvider() && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-services">Meus Serviços</Link>
+                    </DropdownMenuItem>
+                  )}
+                  {!isProvider() && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/become-provider">Tornar-se um Prestador</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-red-600">
                     <LogOut className="w-4 h-4 mr-2" />
