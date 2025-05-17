@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, DollarSign, BookOpen, ShoppingBag, 
-  BarChart2, PieChart, Calendar, Search 
+  BarChart2, PieChart, Calendar, Search, Loader2 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminStats {
   totalUsers: number;
@@ -42,29 +42,26 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        // In a real app, these would be separate authorized admin API calls
-        // For the mock version, we'll simulate with the data we have
-
-        // Get users count
-        const { count: usersCount } = await supabase
+        // Get users data
+        const { data: usersData } = await supabase
           .from("profiles")
-          .select("*", { count: "exact" });
+          .select("*");
         
-        // Get providers count
-        const { count: providersCount } = await supabase
+        // Get providers data
+        const { data: providersData } = await supabase
           .from("profiles")
-          .select("*", { count: "exact" })
+          .select("*")
           .eq("role", "provider");
         
-        // Get services count
-        const { count: servicesCount } = await supabase
+        // Get services data
+        const { data: servicesData } = await supabase
           .from("services")
-          .select("*", { count: "exact" });
+          .select("*");
         
-        // Get bookings count
-        const { count: bookingsCount } = await supabase
+        // Get bookings data
+        const { data: bookingsData } = await supabase
           .from("bookings")
-          .select("*", { count: "exact" });
+          .select("*");
         
         // Get recent users
         const { data: recentUsersData } = await supabase
@@ -74,10 +71,10 @@ const AdminDashboard = () => {
           .limit(10);
 
         setStats({
-          totalUsers: usersCount || 0,
-          totalProviders: providersCount || 0,
-          totalServices: servicesCount || 0,
-          totalBookings: bookingsCount || 0,
+          totalUsers: usersData?.length || 0,
+          totalProviders: providersData?.length || 0,
+          totalServices: servicesData?.length || 0,
+          totalBookings: bookingsData?.length || 0,
         });
 
         setRecentUsers(recentUsersData || []);

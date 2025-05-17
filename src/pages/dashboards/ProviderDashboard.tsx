@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, PlusCircle, Users, DollarSign, ClipboardList, BarChart2 } from "lucide-react";
+import { Calendar, Clock, MapPin, PlusCircle, Users, DollarSign, ClipboardList, BarChart2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -54,29 +54,31 @@ const ProviderDashboard = () => {
         const { data: bookingsData } = await supabase
           .from("bookings")
           .select("*")
-          .eq("provider_id", user?.id)
           .order("booking_date", { ascending: true });
         
-        setBookings(bookingsData || []);
+        // Filter bookings for the current provider
+        const providerBookings = bookingsData?.filter(booking => booking.provider_id === user?.id) || [];
+        setBookings(providerBookings);
         
         // Fetch services
         const { data: servicesData } = await supabase
           .from("services")
-          .select("*")
-          .eq("provider_id", user?.id);
-        
-        setServices(servicesData || []);
+          .select("*");
+          
+        // Filter services for the current provider
+        const providerServices = servicesData?.filter(service => service.provider_id === user?.id) || [];
+        setServices(providerServices);
 
         // Calculate stats
-        if (bookingsData) {
-          const confirmed = bookingsData.filter(b => b.status === 'confirmed').length;
-          const pending = bookingsData.filter(b => b.status === 'pending').length;
-          const revenue = bookingsData
+        if (providerBookings.length > 0) {
+          const confirmed = providerBookings.filter(b => b.status === 'confirmed').length;
+          const pending = providerBookings.filter(b => b.status === 'pending').length;
+          const revenue = providerBookings
             .filter(b => b.status === 'confirmed')
             .reduce((sum, booking) => sum + (booking.service?.price || 0), 0);
 
           setStats({
-            totalBookings: bookingsData.length,
+            totalBookings: providerBookings.length,
             confirmedBookings: confirmed,
             pendingBookings: pending,
             totalRevenue: revenue

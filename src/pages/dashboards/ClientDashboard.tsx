@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Search, BarChart2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Search, BarChart2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -36,11 +36,12 @@ const ClientDashboard = () => {
         const { data } = await supabase
           .from("bookings")
           .select("*")
-          .eq("user_id", user?.id)
-          .eq("status", "confirmed")
           .order("booking_date", { ascending: true });
+          
+        // Filter bookings for the current user
+        const userBookings = data?.filter(booking => booking.user_id === user?.id && booking.status === "confirmed") || [];
         
-        setUpcomingBookings(data || []);
+        setUpcomingBookings(userBookings);
       } catch (error) {
         console.error("Error fetching bookings:", error);
       } finally {
