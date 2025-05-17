@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Bookings from "./pages/Bookings";
 import Account from "./pages/Account";
 import MyServices from "./pages/MyServices";
+import BecomeProvider from "./pages/BecomeProvider";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/account" element={<Account />} />
             <Route path="/my-services" element={<MyServices />} />
+            <Route path="/become-provider" element={<BecomeProvider />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
